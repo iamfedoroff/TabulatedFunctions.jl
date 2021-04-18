@@ -98,3 +98,26 @@ y1gpu = CUDA.zeros(Float32, N1)
 Ks1gpu = CUDA.zeros(Float32, N1)
 @cuda threads=N1 kernel_tfpower(Ks1gpu, tfgpu, x1gpu)
 @test isapprox(collect(Ks1gpu), ones(N1) * K)
+
+
+# ******************************************************************************
+# Interpolation and derivatives
+# ******************************************************************************
+N = 101
+x = range(0.0, 10.0, length=N)
+y = @. 2 * x^2 + 3 * x + 4
+yc = @. (2 + 1im) * x^2 + (3 + 2im) * x + (4 + 3im)
+
+
+yi = TabulatedFunctions.linterp(2.0, x, y)
+@test isapprox(yi, 18.0)
+
+yci = TabulatedFunctions.linterp(2.0, x, yc)
+@test isapprox(yci, 18.0 + 11im)
+
+
+dy = TabulatedFunctions.derivative(x, y, 11)
+@test isapprox(dy, 7.0)
+
+dyc = TabulatedFunctions.derivative(x, yc, 11)
+@test isapprox(dyc, 7.0 + 4im)

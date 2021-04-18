@@ -116,7 +116,7 @@ function derivative(
         dydx = (c[1] * y[i-2] + c[2] * y[i-1] + c[3] * y[i] + c[4] * y[i+1] +
                 c[5] * y[i+2]) / dx
     end
-    return convert(T, dydx)
+    return convert(eltype(y), dydx)
 end
 
 
@@ -141,7 +141,7 @@ function linterp(
         dydx = (yy[i+1] - yy[i]) / dx
         y = yy[i] + dydx * (x - xx[i])
     end
-    return convert(T, y)
+    return convert(eltype(yy), y)
 end
 
 
