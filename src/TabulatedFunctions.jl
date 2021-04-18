@@ -3,16 +3,6 @@ module TabulatedFunctions
 import DelimitedFiles
 import StaticArrays
 
-# CPU / GPU specific functions -------------------------------------------------
-import CUDA
-
-mylog10(x::Float32) = CUDA.log10(x)
-mylog10(x::Float64) = log10(x)
-
-mypow10(x::Float32) = CUDA.pow(10f0, x)
-mypow10(x::Float64) = 10^x
-# ------------------------------------------------------------------------------
-
 
 struct TFunction{
     T<:AbstractFloat,
@@ -56,9 +46,9 @@ function (tf::TFunction{T})(x::T) where T
     if x <= 0
         y = zero(T)   # in order to avoid -Inf in log10(0)
     else
-        xlog10 = mylog10(x)
+        xlog10 = log10(x)
         ylog10 = linterp(xlog10, tf.x, tf.y)
-        y = mypow10(ylog10)
+        y = 10^ylog10
     end
     return convert(T, y)
 end
@@ -73,9 +63,9 @@ derivative in loglog scale:
 """
 function tfpower(tf::TFunction{T}, x::T) where T
     if x <= 0
-        xlog10 = mylog10(floatmin(T))   # in order to avoid -Inf in log10(0)
+        xlog10 = log10(floatmin(T))   # in order to avoid -Inf in log10(0)
     else
-        xlog10 = mylog10(x)
+        xlog10 = log10(x)
     end
 
     dx = step(tf.x)
@@ -126,7 +116,7 @@ function derivative(
         dydx = (c[1] * y[i-2] + c[2] * y[i-1] + c[3] * y[i] + c[4] * y[i+1] +
                 c[5] * y[i+2]) / dx
     end
-    return convert(eltype(y), dydx)
+    return convert(T, dydx)
 end
 
 
@@ -151,7 +141,7 @@ function linterp(
         dydx = (yy[i+1] - yy[i]) / dx
         y = yy[i] + dydx * (x - xx[i])
     end
-    return convert(eltype(yy), y)
+    return convert(T, y)
 end
 
 
